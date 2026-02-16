@@ -145,16 +145,11 @@ th{
 </div>
 
 <script>
-
-window.iniciar = iniciar;
-window.pausar = pausar;
-window.reiniciar = reiniciar;
-window.guardar = guardar;
-
 let num1,num2,correcto,tiempo,intervalo;
 let pausado=false;
 let pregunta=0;
 let puntaje=0;
+let tablaDatos=[];
 
 function iniciar(){
   pregunta=0;
@@ -223,12 +218,6 @@ function mostrarResultado(acierto){
   },1500);
 }
 
-function finalizar(){
-  suma.textContent="🏁 Examen terminado";
-  document.getElementById("tiempo").textContent="";
-  guardar();
-}
-
 function guardar(){
   const nombreJugador = nombre.value || "Anónimo";
 
@@ -244,16 +233,7 @@ function guardar(){
 }
 
 
-  const datos = {
-    nombre: nombreJugador,
-    puntaje: puntaje,
-    digitos: dificultad.value === "10" ? "1" :
-             dificultad.value === "100" ? "2" : "3",
-    tiempoConfig: tiempoLimite.value
-  };
 
-  tablaDatos.push(datos);
-  cargarTabla();
 }
 
 function cargarTabla(){
@@ -288,13 +268,11 @@ function reiniciar(){
 
 cargarTabla();
 </script>
-
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-/* PEGA AQUÍ TU firebaseConfig */
 const firebaseConfig = {
   apiKey: "AIzaSyBXgjYfPgbogkpBeFpXpwyx143cxDBm5pE",
   authDomain: "sumas-salon.firebaseapp.com",
@@ -309,27 +287,27 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const rankingRef = ref(db, "ranking");
 
-/* GUARDAR DATOS */
 window.guardarOnline = function(datos){
   push(rankingRef, datos);
 };
 
-/* LEER DATOS EN TIEMPO REAL */
 window.cargarOnline = function(){
   onValue(rankingRef, (snapshot)=>{
     const data = snapshot.val();
     tabla.innerHTML="";
     if(data){
-      const lista = Object.values(data).sort((a,b)=>b.puntaje-a.puntaje);
+      const lista = Object.values(data)
+        .sort((a,b)=>b.puntaje-a.puntaje);
 
       lista.forEach(j=>{
-        tabla.innerHTML += `
-        <tr>
-          <td>${j.nombre}</td>
-          <td>${j.puntaje}</td>
-          <td>${j.digitos}</td>
-          <td>${j.tiempoConfig}s</td>
-        </tr>`;
+        tabla.innerHTML+=`
+          <tr>
+            <td>${j.nombre}</td>
+            <td>${j.puntaje}</td>
+            <td>${j.digitos}</td>
+            <td>${j.tiempoConfig}s</td>
+          </tr>
+        `;
       });
     }
   });
